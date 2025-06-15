@@ -1,6 +1,5 @@
-//! A program executing a query and printing the result as csv to standard out. Requires
-//! `anyhow` and `csv` crate.
-
+// ...existing code...
+use prettytable::{Table, Row, Cell}; // 추가
 use anyhow::Error;
 use odbc_api::{buffers::TextRowSet, Cursor, Environment, ConnectionOptions, ResultSetMetadata};
 use std::{
@@ -8,22 +7,12 @@ use std::{
     io::{stdout, Write},
     path::PathBuf,
 };
-
-/// Maximum number of rows fetched with one row set. Fetching batches of rows is usually much
-/// faster than fetching individual rows.
 const BATCH_SIZE: usize = 5000;
-
 fn main() -> Result<(), Error> {
-    println!("PATH: {:?}", std::env::var("PATH"));
-    // Write csv to standard out
-    let out = stdout();
-    let mut writer = csv::Writer::from_writer(out);
+    // 표 생성
+    let mut table = Table::new();
 
-    // If you do not do anything fancy it is recommended to have only one Environment in the
-    // entire process.
     let environment = Environment::new()?;
-
-    // Connect using a DSN. Alternatively we could have used a connection string
     let mut connection = environment.connect(
         "Tibero7",
         "sys",
@@ -31,40 +20,33 @@ fn main() -> Result<(), Error> {
         ConnectionOptions::default(),
     )?;
 
-    // Execute a one of query without any parameters.
-    match connection.execute("SELECT * FROM v$database", (), None)? {
+    match connection.execute("SELECT NAME FROM v$database", (), None)? {
         Some(mut cursor) => {
-            // Write the column names to stdout
-            let mut headline : Vec<String> = cursor.column_names()?.collect::<Result<_,_>>()?;
-            writer.write_record(headline)?;
+            // 컬럼명 표 첫 줄에 추가
+            let headline: Vec<String> = cursor.column_names()?.collect::<Result<_,_>>()?;
+            table.add_row(Row::new(headline.iter().map(|h| Cell::new(h)).collect()));
 
-            // Use schema in cursor to initialize a text buffer large enough to hold the largest
-            // possible strings for each column up to an upper limit of 4KiB.
             let mut buffers = TextRowSet::for_cursor(BATCH_SIZE, &mut cursor, Some(4096))?;
-            // Bind the buffer to the cursor. It is now being filled with every call to fetch.
             let mut row_set_cursor = cursor.bind_buffer(&mut buffers)?;
 
-            // Iterate over batches
             while let Some(batch) = row_set_cursor.fetch()? {
-                // Within a batch, iterate over every row
                 for row_index in 0..batch.num_rows() {
-                    // Within a row iterate over every column
-                    let record = (0..batch.num_cols()).map(|col_index| {
-                        batch
-                            .at(col_index, row_index)
-                            .unwrap_or(&[])
-                    });
-                    // Writes row as csv
-                    writer.write_record(record)?;
+                    let record: Vec<String> = (0..batch.num_cols())
+                        .map(|col_index| {
+                            let bytes = batch.at(col_index, row_index).unwrap_or(&[]);
+                            String::from_utf8_lossy(bytes).to_string()
+                        })
+                        .collect();
+                    table.add_row(Row::new(record.iter().map(|v| Cell::new(v)).collect()));
                 }
             }
+            table.printstd(); // 표 출력
         }
         None => {
-            eprintln!(
-                "Query came back empty. No output has been created."
-            );
+            eprintln!("Query came back empty. No output has been created.");
         }
     }
 
     Ok(())
 }
+// ...existing code...
