@@ -1,0 +1,28 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Run Tibero ODBC Query (Full ENV)",
+      "type": "shell",
+      "command": "/root/.cargo/bin/cargo",
+      "args": ["run", "--package", "tibero_test", "--bin", "tibero_test"],
+      "options": {
+        "env": {
+          "PATH": ".:/tibero/tibero7/bin:/tibero/tibero7/client/bin:/root/unixODBC/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/bin:/root/bin:/root/.cargo/bin",
+          "SYSMASTERDB_HOME": "/tibero/sysmaster-db-8.2.1-release",
+          "TB_HOME": "/tibero/tibero7",
+          "TB_SID": "tibero",
+          "ODBC_HOME": "/root/unixODBC",
+          "LD_LIBRARY_PATH": "/root/unixODBC/lib:/tibero/tibero7/client/lib",
+          "ODBCINI": "/root/unixODBC/etc/odbc.ini",
+          "ODBCINSTINI": "/root/unixODBC/etc/odbcinst.ini"
+        }
+      },
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      }
+    }
+  ]
+}

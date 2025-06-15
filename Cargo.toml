@@ -1,0 +1,12 @@
+[package]
+name = "tibero_test"
+version = "0.1.0"
+edition = "2024"
+build = "build.rs"
+
+
+
+[dependencies]
+anyhow = "1.0.98"
+csv = "1.3.1"
+odbc-api = "13.0.1"

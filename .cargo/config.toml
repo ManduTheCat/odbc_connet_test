@@ -1,0 +1,5 @@
+[env]
+PATH = "/tibero/tibero7/bin:/tibero/tibero7/client/bin:/root/unixODBC/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/bin"
+LD_LIBRARY_PATH = "/tibero/tibero7/client/lib:/root/unixODBC/lib"
+ODBCINI = "/root/unixODBC/etc/odbc.ini"
+ODBCINSTINI = "/root/unixODBC/etc/odbcinst.ini"
