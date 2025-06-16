@@ -2,18 +2,13 @@
 use prettytable::{Table, Row, Cell}; // 추가
 use anyhow::Error;
 use odbc_api::{buffers::TextRowSet, Cursor, Environment, ConnectionOptions, ResultSetMetadata};
-use std::{
-    ffi::CStr,
-    io::{stdout, Write},
-    path::PathBuf,
-};
 const BATCH_SIZE: usize = 5000;
 fn main() -> Result<(), Error> {
     // 표 생성
     let mut table = Table::new();
 
     let environment = Environment::new()?;
-    let mut connection = environment.connect(
+    let connection = environment.connect(
         "Tibero7",
         "sys",
         "tibero",
